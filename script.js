@@ -4,25 +4,26 @@ let currentQuestion = null;
 let gameData = null;
 let dailyDoubles = [];
 
+// Check if we're running locally or on Vercel
+function isLocalEnvironment() {
+    return window.location.hostname === 'localhost' ||
+           window.location.hostname === '127.0.0.1' ||
+           window.location.protocol === 'file:';
+}
+
 // Generate questions using OpenAI API
 async function generateQuestions(topic) {
     const loadingDiv = document.getElementById('loading');
     loadingDiv.textContent = 'Generating questions';
 
-    try {
-        const response = await fetch('/api/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
-                messages: [{
-                    role: 'system',
-                    content: 'You are an expert Jeopardy question writer. Create engaging questions with proper difficulty scaling. Avoid obvious definitions but keep questions fair and answerable. Return ONLY valid JSON, no extra text.'
-                }, {
-                    role: 'user',
-                    content: `Generate a Jeopardy game about "${topic}". Create 6 related categories and 5 questions per category (values: 200, 400, 600, 800, 1000).
+    const messagePayload = {
+        model: 'gpt-3.5-turbo',
+        messages: [{
+            role: 'system',
+            content: 'You are an expert Jeopardy question writer. Create engaging questions with proper difficulty scaling. Avoid obvious definitions but keep questions fair and answerable. Return ONLY valid JSON, no extra text.'
+        }, {
+            role: 'user',
+            content: `Generate a Jeopardy game about "${topic}". Create 6 related categories and 5 questions per category (values: 200, 400, 600, 800, 1000).
 
 DIFFICULTY GUIDELINES (VERY IMPORTANT - follow this progression):
 
@@ -145,10 +146,38 @@ Return ONLY a JSON object with this exact structure:
 }
 
 Keep answers SHORT (1-4 words max). All categories must relate to: ${topic}`
-                }],
-                temperature: 0.8
-            })
-        });
+        }],
+        temperature: 0.8
+    };
+
+    try {
+        let response;
+
+        // Check if running locally or on Vercel
+        if (isLocalEnvironment()) {
+            // Local development: call OpenAI directly with API key from config.js
+            if (typeof CONFIG === 'undefined' || !CONFIG.OPENAI_API_KEY) {
+                throw new Error('API key not found. Make sure config.js exists with your OPENAI_API_KEY.');
+            }
+
+            response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+                },
+                body: JSON.stringify(messagePayload)
+            });
+        } else {
+            // Production: use Vercel serverless function
+            response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messagePayload)
+            });
+        }
 
         if (!response.ok) {
             const error = await response.json();
