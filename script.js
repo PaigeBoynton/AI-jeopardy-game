@@ -1,6 +1,3 @@
-// API key loaded from config.js (not committed to GitHub)
-const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
-
 // Game state
 let score = 0;
 let currentQuestion = null;
@@ -13,11 +10,10 @@ async function generateQuestions(topic) {
     loadingDiv.textContent = 'Generating questions';
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 model: 'gpt-3.5-turbo',

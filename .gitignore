@@ -1,5 +1,11 @@
 # API Keys and sensitive configuration
 config.js
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
 
 # OS Files
 .DS_Store
