@@ -1,35 +1,15 @@
 import crypto from 'crypto';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
-const DATA_DIR = '/tmp/jeopardy-data';
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-// Ensure data directory exists
-async function ensureDataDir() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch (error) {
-    // Directory might already exist
-  }
+// Load user from KV
+async function getUser(username) {
+  const user = await kv.get(`user:${username.toLowerCase()}`);
+  return user;
 }
 
-// Load users from file
-async function loadUsers() {
-  try {
-    await ensureDataDir();
-    const data = await fs.readFile(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    // File doesn't exist yet
-    return {};
-  }
-}
-
-// Save users to file
-async function saveUsers(users) {
-  await ensureDataDir();
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+// Save user to KV
+async function saveUser(username, userData) {
+  await kv.set(`user:${username.toLowerCase()}`, userData);
 }
 
 // Hash password
@@ -58,16 +38,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const users = await loadUsers();
-
     // Check if username already exists
-    if (users[username.toLowerCase()]) {
+    const existingUser = await getUser(username);
+    if (existingUser) {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
     // Create new user
     const userId = crypto.randomUUID();
-    users[username.toLowerCase()] = {
+    const userData = {
       id: userId,
       username: username,
       passwordHash: hashPassword(password),
@@ -75,7 +54,7 @@ export default async function handler(req, res) {
       games: []
     };
 
-    await saveUsers(users);
+    await saveUser(username, userData);
 
     // Return success (don't send password hash to client)
     res.status(201).json({

@@ -1,17 +1,9 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { kv } from '@vercel/kv';
 
-const DATA_DIR = '/tmp/jeopardy-data';
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-// Load users from file
-async function loadUsers() {
-  try {
-    const data = await fs.readFile(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return {};
-  }
+// Load user from KV
+async function getUser(username) {
+  const user = await kv.get(`user:${username.toLowerCase()}`);
+  return user;
 }
 
 export default async function handler(req, res) {
@@ -26,8 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const users = await loadUsers();
-    const user = users[username.toLowerCase()];
+    const user = await getUser(username);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
