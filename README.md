@@ -6,14 +6,14 @@ An interactive Jeopardy-style trivia game that uses OpenAI's GPT to generate cus
 
 - 🎯 **AI-Generated Questions**: Enter any topic and get 6 categories with 5 questions each
 - 📊 **Difficulty Progression**: Questions range from $200 (easy) to $1000 (difficult)
-- 🎨 **Classic Jeopardy Styling**: Authentic blue and gold color scheme
+- 🎲 **Daily Doubles**: Random special questions with wagering
 - 💯 **Smart Answer Checking**: Accepts different word forms (e.g., "marinate" vs "marination")
-- ✨ **Beautiful Interface**: Clean, responsive design with smooth animations
+- 🎨 **Classic Jeopardy Styling**: Blue and gold color scheme
+- ✨ **Interface**: Clean, responsive design with smooth animations
 - 🔐 **User Authentication**: Create an account to save your game history
 - 👤 **Guest Mode**: Play without creating an account
 - 📈 **Game History**: Track your performance over time (for registered users)
 - 📱 **Fully Responsive**: Works on desktop, tablet, and mobile devices
-- 🎲 **Daily Doubles**: Random special questions with wagering
 
 ## Setup Instructions
 
