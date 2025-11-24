@@ -14,9 +14,11 @@ function isLocalEnvironment() {
 }
 
 // Generate questions using OpenAI API
-async function generateQuestions(topic) {
+async function generateQuestions(topic, attemptNumber = 1) {
     const loadingDiv = document.getElementById('loading');
-    loadingDiv.textContent = 'Generating questions';
+    loadingDiv.textContent = attemptNumber > 1
+        ? `Generating questions (attempt ${attemptNumber})...`
+        : 'Generating questions';
 
     const messagePayload = {
         model: 'gpt-4o-mini',
@@ -259,8 +261,15 @@ Keep answers SHORT (1-4 words max). All categories must relate to: ${topic}`
         }
 
         if (badQuestions.length > 0) {
-            console.error('Questions with answers in them:', badQuestions);
-            throw new Error(`AI generated ${badQuestions.length} bad question(s) with answers in the question text. Please try again with a different topic or try again.`);
+            console.warn(`Attempt ${attemptNumber}: Found ${badQuestions.length} bad question(s), retrying...`, badQuestions);
+
+            // Retry up to 5 times
+            if (attemptNumber < 5) {
+                return await generateQuestions(topic, attemptNumber + 1);
+            } else {
+                // After 5 attempts, give up and use what we have (better than nothing)
+                console.error('Max retries reached, using questions despite issues');
+            }
         }
 
         loadingDiv.textContent = '';
