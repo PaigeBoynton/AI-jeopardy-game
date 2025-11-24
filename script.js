@@ -19,7 +19,7 @@ async function generateQuestions(topic) {
     loadingDiv.textContent = 'Generating questions';
 
     const messagePayload = {
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [{
             role: 'system',
             content: 'You are an expert Jeopardy question writer. Create engaging questions with proper difficulty scaling. Avoid obvious definitions but keep questions fair and answerable. Return ONLY valid JSON, no extra text.'
