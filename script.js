@@ -237,6 +237,32 @@ Keep answers SHORT (1-4 words max). All categories must relate to: ${topic}`
             }
         }
 
+        // Validate that answers don't appear in questions
+        let badQuestions = [];
+        for (let i = 0; i < parsedData.questions.length; i++) {
+            for (let j = 0; j < parsedData.questions[i].length; j++) {
+                const q = parsedData.questions[i][j];
+                const question = q.question.toLowerCase();
+                const answer = q.answer.toLowerCase();
+
+                // Split answer into words and check each one
+                const answerWords = answer.split(/\s+/).filter(w => w.length > 2);
+
+                for (const word of answerWords) {
+                    // Check if word or its root appears in question
+                    if (question.includes(word) || question.includes(word.substring(0, Math.max(3, word.length - 2)))) {
+                        badQuestions.push(`Category "${parsedData.categories[i]}", $${q.value}: "${q.question}" → Answer: "${q.answer}" (contains "${word}")`);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (badQuestions.length > 0) {
+            console.error('Questions with answers in them:', badQuestions);
+            throw new Error(`AI generated ${badQuestions.length} bad question(s) with answers in the question text. Please try again with a different topic or try again.`);
+        }
+
         loadingDiv.textContent = '';
         return parsedData;
 
