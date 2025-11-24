@@ -17,7 +17,7 @@ function isLocalEnvironment() {
 async function generateQuestions(topic, attemptNumber = 1) {
     const loadingDiv = document.getElementById('loading');
     loadingDiv.textContent = attemptNumber > 1
-        ? `Generating questions (attempt ${attemptNumber})...`
+        ? 'Refining questions...'
         : 'Generating questions';
 
     const messagePayload = {
@@ -261,14 +261,14 @@ Keep answers SHORT (1-4 words max). All categories must relate to: ${topic}`
         }
 
         if (badQuestions.length > 0) {
-            console.warn(`Attempt ${attemptNumber}: Found ${badQuestions.length} bad question(s), retrying...`, badQuestions);
+            console.warn(`Attempt ${attemptNumber}: Found ${badQuestions.length} bad question(s)`, badQuestions);
 
-            // Retry up to 5 times
-            if (attemptNumber < 5) {
+            // Retry once, then use what we have
+            if (attemptNumber < 2) {
                 return await generateQuestions(topic, attemptNumber + 1);
             } else {
-                // After 5 attempts, give up and use what we have (better than nothing)
-                console.error('Max retries reached, using questions despite issues');
+                // After 2 attempts, use what we have
+                console.warn('Using questions despite some issues after 2 attempts');
             }
         }
 
